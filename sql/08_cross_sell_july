@@ -1,0 +1,24 @@
+WITH buyers AS (
+  SELECT DISTINCT fullVisitorId
+  FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
+    UNNEST(hits) AS h,
+    UNNEST(h.product) AS product
+  WHERE product.v2ProductName = "YouTube Men's Vintage Henley"
+    AND product.productRevenue IS NOT NULL
+)
+
+
+SELECT
+  product.v2ProductName AS other_purchased_products,
+  SUM(product.productQuantity) AS quantity
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
+  UNNEST(hits) AS h,
+  UNNEST(h.product) AS product
+WHERE fullVisitorId IN (SELECT fullVisitorId FROM buyers)
+  AND product.v2ProductName != "YouTube Men's Vintage Henley"
+  AND product.productRevenue IS NOT NULL
+  AND totals.transactions >= 1
+GROUP BY other_purchased_products
+ORDER BY quantity DESC;
+
+
