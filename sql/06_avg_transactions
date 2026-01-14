@@ -1,0 +1,9 @@
+SELECT
+  FORMAT_DATE('%Y%m', PARSE_DATE('%Y%m%d', date)) AS month,
+  ROUND(SUM(totals.transactions) / COUNT(DISTINCT fullVisitorID), 6) AS avg_no_transactionperuser
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
+  UNNEST(hits) AS h,
+  UNNEST(h.product) AS product
+WHERE totals.transactions >=1
+  AND product.productRevenue IS NOT NULL
+GROUP BY month;
