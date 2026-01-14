@@ -1,0 +1,24 @@
+WITH total_rev_table AS (
+  SELECT
+    SUM(product.productRevenue)/1000000 AS total_revenue
+  FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`,
+    UNNEST(hits) AS h,
+    UNNEST(h.product) AS product
+  WHERE totals.transactions IS NOT NULL
+    AND product.productRevenue IS NOT NULL
+)
+
+
+SELECT
+  device.deviceCategory AS device,
+  SUM(product.productRevenue)/1000000 AS revenue_by_device,
+  t.total_revenue,
+  ROUND((SUM(product.productRevenue)/1000000) / t.total_revenue * 100, 2) AS ratio
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`,
+  UNNEST(hits) AS h,
+  UNNEST(h.product) AS product,
+  total_rev_table AS t
+WHERE totals.transactions IS NOT NULL
+  AND product.productRevenue IS NOT NULL
+GROUP BY device, t.total_revenue
+ORDER BY ratio DESC;
