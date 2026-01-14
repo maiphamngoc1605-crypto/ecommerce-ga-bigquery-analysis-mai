@@ -1,0 +1,10 @@
+SELECT
+  trafficSource.source AS source,
+  SUM(totals.visits) AS total_visits,
+  SUM(totals.transactions) AS total_no_transactions,
+  ROUND(SUM(totals.transactions)/SUM(totals.visits)*100, 1) AS conversion_rate
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`
+WHERE _table_suffix BETWEEN '0101' AND '1231'
+GROUP BY source
+HAVING total_no_transactions >=50
+ORDER BY conversion_rate DESC;
