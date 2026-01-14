@@ -1,0 +1,13 @@
+SELECT
+  FORMAT_DATE('%Y%m', PARSE_DATE('%Y%m%d', date)) AS month,
+  COUNTIF(h.eCommerceAction.action_type = '2') AS num_product_view,
+  COUNTIF(h.eCommerceAction.action_type = '3') AS num_addtocart,
+  COUNTIF(h.eCommerceAction.action_type = '6' AND product.productRevenue IS NOT NULL) AS num_purchase,
+  ROUND(COUNTIF(h.eCommerceAction.action_type = '3') / COUNTIF(h.eCommerceAction.action_type = '2') * 100, 2) AS add_to_cart_rate,
+  ROUND(COUNTIF(h.eCommerceAction.action_type = '6' AND product.productRevenue IS NOT NULL) / COUNTIF(h.eCommerceAction.action_type = '2') * 100, 2) AS purchase_rate
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`,
+  UNNEST(hits) AS h,
+  UNNEST(h.product) AS product
+WHERE _TABLE_SUFFIX BETWEEN '0101' AND '0331'
+GROUP BY month
+ORDER BY month;
