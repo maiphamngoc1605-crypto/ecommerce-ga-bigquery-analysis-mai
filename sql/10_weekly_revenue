@@ -1,0 +1,17 @@
+SELECT
+  FORMAT_DATE('%Y-%W', PARSE_DATE('%Y%m%d', date)) AS week,
+  ROUND(SUM(product.productRevenue) / 1000000, 2) AS revenue_by_week,
+  SUM(ROUND(SUM(product.productRevenue) / 1000000, 2)) OVER (
+    ORDER BY FORMAT_DATE('%Y-%W', MIN(PARSE_DATE('%Y%m%d', date)))
+  ) AS cumulative_total
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`,
+  UNNEST(hits) AS h,
+  UNNEST(h.product) AS product
+WHERE product.productRevenue IS NOT NULL
+  AND _TABLE_SUFFIX BETWEEN '0501' AND '0731'
+GROUP BY week
+ORDER BY week;
+
+
+
+
